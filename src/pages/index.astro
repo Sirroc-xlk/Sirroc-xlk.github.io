@@ -1,0 +1,41 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../site.config';
+import { getPosts, formatDate } from '../posts';
+
+const posts = await getPosts();
+const byYear = new Map<number, typeof posts>();
+for (const p of posts) {
+  const y = p.data.date.getFullYear();
+  if (!byYear.has(y)) byYear.set(y, []);
+  byYear.get(y)!.push(p);
+}
+---
+<Base>
+  <p class="muted intro">{SITE.description}</p>
+  {[...byYear.entries()].map(([year, list]) => (
+    <section>
+      <h2 class="year">{year}</h2>
+      <ul class="post-list">
+        {list.map((p) => (
+          <li>
+            <a href={`/posts/${p.id}/`}>{p.data.title}</a>
+            <time class="muted">{formatDate(p.data.date).slice(5)}</time>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+  {posts.length === 0 && <p class="muted">还没有文章。</p>}
+</Base>
+
+<style>
+  .intro { margin-top: 0; margin-bottom: 32px; }
+  .year { font-size: 1.1rem; color: var(--muted); margin: 28px 0 8px; }
+  .post-list { list-style: none; padding: 0; margin: 0; }
+  .post-list li {
+    display: flex; justify-content: space-between; gap: 16px;
+    padding: 8px 0; border-bottom: 1px dashed var(--line);
+  }
+  .post-list time { flex-shrink: 0; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+</style>

@@ -1,0 +1,28 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getPosts, formatDate } from '../../posts';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  const tags = new Set(posts.flatMap((p) => p.data.tags));
+  return [...tags].map((tag) => ({
+    params: { tag },
+    props: { tag, list: posts.filter((p) => p.data.tags.includes(tag)) },
+  }));
+}
+const { tag, list } = Astro.props;
+---
+<Base title={`标签：${tag}`}>
+  <h1>标签：{tag}</h1>
+  <ul class="list">
+    {list.map((p) => (
+      <li><time class="muted">{formatDate(p.data.date)}</time> <a href={`/posts/${p.id}/`}>{p.data.title}</a></li>
+    ))}
+  </ul>
+  <p><a href="/tags/">← 所有标签</a></p>
+</Base>
+<style>
+  .list { list-style: none; padding: 0; }
+  .list li { padding: 6px 0; }
+  time { font-variant-numeric: tabular-nums; margin-right: 10px; }
+</style>
